@@ -10,7 +10,7 @@ describe("prisma-orm", () => {
 
   bench("findMany-base", async () => {
     const customers = await prisma.customer.findMany();
-    console.log(`customers:`, customers);
+    console.log(`customers:`, customers.length);
   });
 
   bench("findMany-filters-ordering-pagination", async () => {
@@ -25,7 +25,7 @@ describe("prisma-orm", () => {
       skip: 0,
       take: 10,
     });
-    console.log(`customersWithOptions:`, customersWithOptions);
+    console.log(`customersWithOptions:`, customersWithOptions.length);
   });
 
   bench("findMany-1-level-nesting", async () => {
@@ -436,12 +436,12 @@ describe("prisma-orm", () => {
    * delete
    */
 
-  bench("delete-base", async () => {
-    // Delete a customer
-    const deletedCustomer = await prisma.customer.delete({
-      where: { id: 1 },
-    });
-  });
+  // bench("delete-base", async () => {
+  //   // Delete a customer
+  //   const deletedCustomer = await prisma.customer.delete({
+  //     where: { id: 1 },
+  //   });
+  // });
 
   /**
    * createMany
