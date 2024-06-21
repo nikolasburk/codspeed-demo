@@ -10,7 +10,7 @@ model Customer {
   id          Int       @id @default(autoincrement())
   createdAt   DateTime  @default(now())
   name        String?
-  email       String    @unique
+  email       String    // @unique
   address     Address?
   isActive    Boolean   @default(false)
   // extraInfo   Json?
