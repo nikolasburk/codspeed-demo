@@ -1,0 +1,75 @@
+import { PrismaClient } from '@prisma/client';
+import { faker } from '@faker-js/faker';
+
+const prisma = new PrismaClient();
+
+async function main() {
+  // Seed Customers
+  for (let i = 0; i < 100; i++) {
+    const customer = await prisma.customer.create({
+      data: {
+        name: faker.name.fullName(),
+        email: faker.internet.email(),
+        isActive: faker.datatype.boolean(),
+        address: {
+          create: {
+            street: faker.address.streetAddress(),
+            city: faker.address.city(),
+            postalCode: faker.address.zipCode(),
+            country: faker.address.country(),
+          },
+        },
+      },
+    });
+
+    // Seed Orders for each Customer
+    for (let j = 0; j < 10; j++) {
+      await prisma.order.create({
+        data: {
+          date: faker.date.past(),
+          totalAmount: faker.number.int({ min: 10, max: 1000 }),
+          customerId: customer.id,
+        },
+      });
+    }
+  }
+
+  // Seed Products
+  for (let i = 0; i < 100; i++) {
+    await prisma.product.create({
+      data: {
+        name: faker.commerce.productName(),
+        price: parseFloat(faker.commerce.price()),
+        quantity: faker.number.int({ min: 1, max: 100 }),
+        description: faker.commerce.productDescription(),
+      },
+    });
+  }
+
+  // Associate Products with Orders
+  const orders = await prisma.order.findMany();
+  const products = await prisma.product.findMany();
+
+  for (const order of orders) {
+    const randomProducts = faker.helpers.shuffle(products).slice(0, faker.number.int({ min: 1, max: 5 }));
+    for (const product of randomProducts) {
+      await prisma.order.update({
+        where: { id: order.id },
+        data: {
+          products: {
+            connect: { id: product.id },
+          },
+        },
+      });
+    }
+  }
+}
+
+main()
+  .catch(e => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });

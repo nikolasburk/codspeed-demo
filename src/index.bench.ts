@@ -8,7 +8,7 @@ describe("prisma-orm", () => {
    * findMany
    */
 
-  bench("finMany-base", async () => {
+  bench("findMany-base", async () => {
     const customers = await prisma.customer.findMany();
     console.log(`customers:`, customers)
   });
