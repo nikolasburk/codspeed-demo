@@ -9,10 +9,10 @@ async function main() {
 
   // Clean tables
   console.log(`Clear tables ...`)
+  await prisma.address.deleteMany()
   await prisma.customer.deleteMany()
   await prisma.order.deleteMany()
   await prisma.product.deleteMany()
-  await prisma.address.deleteMany()
 
   // Seed Customers
   for (let i = 0; i < 100; i++) {
