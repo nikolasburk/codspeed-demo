@@ -1,0 +1,18 @@
+{
+  "name": "script",
+  "license": "MIT",
+  "scripts": {
+    "dev": "ts-node ./script.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "5.15.0",
+    "@types/node": "20.14.7"
+  },
+  "devDependencies": {
+    "@codspeed/vitest-plugin": "^3.1.0",
+    "prisma": "5.15.0",
+    "ts-node": "10.9.2",
+    "typescript": "5.5.2",
+    "vitest": "^1.6.0"
+  }
+}
