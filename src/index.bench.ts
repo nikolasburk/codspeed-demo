@@ -10,7 +10,7 @@ describe("prisma-orm", () => {
 
   bench("finMany-base", async () => {
     const customers = await prisma.customer.findMany();
-    console.log(`customers`, customers)
+    console.log(`customers:`, customers)
   });
 
   bench("findMany-filters-ordering-pagination", async () => {
@@ -25,7 +25,7 @@ describe("prisma-orm", () => {
       skip: 0,
       take: 10,
     });
-    console.log(`customersWithOptions`, customersWithOptions)
+    console.log(`customersWithOptions:`, customersWithOptions)
   });
 
   bench("findMany-1-level-nesting", async () => {
@@ -269,19 +269,12 @@ describe("prisma-orm", () => {
   });
 
   bench("create-1-level-of-nesting", async () => {
-// Create a customer with an address
-const newCustomerWithAdress = await prisma.customer.create({
-  data: {
-    name: 'John Doe',
-    email: new Date() + "@example.com",
-    address: {
-      create: {
-        street: '123 Main St',
-        city: 'Anytown',
-        postalCode: '12345',
-        country: 'Country'
-      }
-    }
-  }
-});
+    // Create a customer
+    const newCustomer = await prisma.customer.create({
+      data: {
+        name: "John Doe",
+        email: new Date() + "@example.com",
+      },
+    });
+  });
 });
