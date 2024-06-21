@@ -3,7 +3,7 @@ import Database from "better-sqlite3";
 import { Customer } from "./drizzle/schema";
 import { bench, describe } from "vitest";
 
-const sqlite = new Database("sqlite.db");
+const sqlite = new Database("./prisma/dev.db");
 
 export const db = drizzle(sqlite);
 
