@@ -4,6 +4,13 @@ import { faker } from '@faker-js/faker';
 const prisma = new PrismaClient();
 
 async function main() {
+
+  // Clean tables
+  await prisma.customer.deleteMany()
+  await prisma.order.deleteMany()
+  await prisma.product.deleteMany()
+  await prisma.address.deleteMany()
+
   // Seed Customers
   for (let i = 0; i < 100; i++) {
     const customer = await prisma.customer.create({

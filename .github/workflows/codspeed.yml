@@ -20,5 +20,5 @@ jobs:
       - name: Run benchmarks
         uses: CodSpeedHQ/action@v2
         with:
-          run: npx vitest bench --run
+          run: npx prisma db seed && npx vitest bench --run
           token: ${{ secrets.CODSPEED_TOKEN }}
