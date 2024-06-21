@@ -5,7 +5,10 @@ const prisma = new PrismaClient();
 
 async function main() {
 
+  console.log(`Seeding ...`)
+
   // Clean tables
+  console.log(`Clear tables ...`)
   await prisma.customer.deleteMany()
   await prisma.order.deleteMany()
   await prisma.product.deleteMany()
@@ -70,6 +73,13 @@ async function main() {
       });
     }
   }
+
+  const ordersCount = await prisma.order.count();
+  const productsCount = await prisma.product.count();
+  const addressesCount = await prisma.address.count();
+  const customersCount = await prisma.customer.count();
+  console.log(`Created: \n${ordersCount} orders\n${productsCount} products\n${addressesCount} addresses\n${customersCount} customers`)
+
 }
 
 main()
