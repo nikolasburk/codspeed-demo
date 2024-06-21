@@ -10,23 +10,28 @@ async function main() {
   // Clean tables
   console.log(`Clear tables ...`)
   await prisma.address.deleteMany()
+  await prisma.$executeRaw`DELETE FROM sqlite_sequence WHERE name='Address';`
   await prisma.order.deleteMany()
+  await prisma.$executeRaw`DELETE FROM sqlite_sequence WHERE name='Order';`
   await prisma.product.deleteMany()
+  await prisma.$executeRaw`DELETE FROM sqlite_sequence WHERE name='Product';`
   await prisma.customer.deleteMany()
+  await prisma.$executeRaw`DELETE FROM sqlite_sequence WHERE name='Customer';`
+
 
   // Seed Customers
   for (let i = 0; i < 100; i++) {
     const customer = await prisma.customer.create({
       data: {
-        name: faker.name.fullName(),
+        name: faker.person.fullName(),
         email: faker.internet.email(),
         isActive: faker.datatype.boolean(),
         address: {
           create: {
-            street: faker.address.streetAddress(),
-            city: faker.address.city(),
-            postalCode: faker.address.zipCode(),
-            country: faker.address.country(),
+            street: faker.location.streetAddress(),
+            city: faker.location.city(),
+            postalCode: faker.location.zipCode(),
+            country: faker.location.country(),
           },
         },
       },
