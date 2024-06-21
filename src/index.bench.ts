@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { bench, describe } from "vitest";
 
 const prisma = new PrismaClient();
@@ -10,7 +10,7 @@ describe("prisma-orm", () => {
 
   bench("findMany-base", async () => {
     const customers = await prisma.customer.findMany();
-    console.log(`customers:`, customers)
+    console.log(`customers:`, customers);
   });
 
   bench("findMany-filters-ordering-pagination", async () => {
@@ -25,7 +25,7 @@ describe("prisma-orm", () => {
       skip: 0,
       take: 10,
     });
-    console.log(`customersWithOptions:`, customersWithOptions)
+    console.log(`customersWithOptions:`, customersWithOptions);
   });
 
   bench("findMany-1-level-nesting", async () => {
@@ -274,6 +274,258 @@ describe("prisma-orm", () => {
       data: {
         name: "John Doe",
         email: new Date() + "@example.com",
+      },
+    });
+  });
+
+  bench("create-2-levels-of-nesting", async () => {
+    // Create a customer with an address and an order with products
+    const newCustomerWithOrder = await prisma.customer.create({
+      data: {
+        name: "John Doe",
+        email: "john.doe@example.com",
+        orders: {
+          create: {
+            date: new Date(),
+            totalAmount: 100.5,
+            products: {
+              connect: [{ id: 1 }, { id: 2 }], // Assuming products with IDs 1 and 2 already exist
+            },
+          },
+        },
+      },
+    });
+  });
+
+  /**
+   * update
+   */
+
+  bench("update-base", async () => {
+    // Update a customer
+    const updatedCustomer = await prisma.customer.update({
+      where: { id: 1 },
+      data: {
+        name: "John Doe Updated",
+      },
+    });
+  });
+
+  bench("update-1-level-of-nesting", async () => {
+    // Update a customer and their address
+    const updatedCustomerWithAddress = await prisma.customer.update({
+      where: { id: 1 },
+      data: {
+        name: "John Doe Updated",
+        address: {
+          update: {
+            street: "456 New St",
+          },
+        },
+      },
+    });
+  });
+
+  bench("update-2-levels-of-nesting", async () => {
+    // Update a customer, their address, and an order's totalAmount
+    const updatedCustomerWithOrder = await prisma.customer.update({
+      where: { id: 1 },
+      data: {
+        name: "John Doe Updated",
+        address: {
+          update: {
+            street: "456 New St",
+          },
+        },
+        orders: {
+          update: {
+            where: { id: 1 },
+            data: {
+              totalAmount: 200.0,
+            },
+          },
+        },
+      },
+    });
+  });
+
+  /**
+   * upsert
+   */
+
+  bench("upsert-base", async () => {
+    // Upsert a customer
+    const upsertedCustomer = await prisma.customer.upsert({
+      where: { id: 1 },
+      update: {
+        name: "John Doe Upserted",
+      },
+      create: {
+        name: "John Doe",
+        email: "john.doe@example.com",
+      },
+    });
+  });
+
+  bench("upsert-1-level-of-nesting", async () => {
+    // Upsert a customer and their address
+    const upsertedCustomerWithAddress = await prisma.customer.upsert({
+      where: { id: 1 },
+      update: {
+        name: "John Doe Upserted",
+        address: {
+          update: {
+            street: "456 New St",
+          },
+        },
+      },
+      create: {
+        name: "John Doe",
+        email: "john.doe@example.com",
+        address: {
+          create: {
+            street: "123 Main St",
+            city: "Anytown",
+            postalCode: "12345",
+            country: "Country",
+          },
+        },
+      },
+    });
+  });
+
+  bench("upsert-2-levels-of-nesting", async () => {
+    // Upsert a customer, their address, and an order
+    const upsertedCustomerWithOrder = await prisma.customer.upsert({
+      where: { id: 1 },
+      update: {
+        name: "John Doe Upserted",
+        orders: {
+          upsert: {
+            where: { id: 1 },
+            update: {
+              totalAmount: 200.0,
+            },
+            create: {
+              date: new Date(),
+              totalAmount: 100.5,
+              products: {
+                connect: [{ id: 1 }, { id: 2 }],
+              },
+            },
+          },
+        },
+      },
+      create: {
+        name: "John Doe",
+        email: "john.doe@example.com",
+        orders: {
+          create: {
+            date: new Date(),
+            totalAmount: 100.5,
+            products: {
+              connect: [{ id: 1 }, { id: 2 }],
+            },
+          },
+        },
+      },
+    });
+  });
+
+  /**
+   * delete
+   */
+
+  bench("delete-base", async () => {
+    // Delete a customer
+    const deletedCustomer = await prisma.customer.delete({
+      where: { id: 1 },
+    });
+  });
+
+  /**
+   * createMany
+   */
+
+  bench("createMany-base", async () => {
+    // Create many customers
+    const users: Prisma.CustomerCreateInput[] = [];
+    for (let i = 0; i < 1000; i++) {
+      users.push({
+        name: `Customer ${i}`,
+        email: `customer${i}@example.com`,
+      });
+    }
+    const createdCustomersCount = await prisma.customer.createMany({
+      data: users,
+    });
+  });
+
+  /**
+   * createManyAndReturn
+   */
+
+  bench("createManyAndReturn-base", async () => {
+    // Create many customers
+    const users: Prisma.CustomerCreateInput[] = [];
+    for (let i = 0; i < 1000; i++) {
+      users.push({
+        name: `Customer ${i}`,
+        email: `customer${i}@example.com`,
+      });
+    }
+    const createdCustomersCount = await prisma.customer.createManyAndReturn({
+      data: users,
+    });
+  });
+
+  /**
+   * updateMany
+   */
+
+  bench("updateMany-base", async () => {
+    // Update many customers to be active
+    const updatedCustomers = await prisma.customer.updateMany({
+      where: { isActive: false },
+      data: { isActive: true },
+    });
+  });
+
+  /**
+   * deleteMany
+   */
+
+  bench("deleteMany-base", async () => {
+    // Delete many customers who are inactive
+    const deletedCustomers = await prisma.customer.deleteMany({
+      where: { isActive: false },
+    });
+  });
+
+  /**
+   * aggregate
+   */
+
+  bench("aggregate-base", async () => {
+    const totalSales = await prisma.order.aggregate({
+      _sum: {
+        totalAmount: true,
+      },
+    });
+  });
+
+  /**
+   * groupBy
+   */
+
+  bench("groupBy-base", async () => {
+    const salesByCustomer = await prisma.order.groupBy({
+      by: ["customerId"],
+      _sum: {
+        totalAmount: true,
+      },
+      _count: {
+        _all: true,
       },
     });
   });
