@@ -17,8 +17,17 @@ jobs:
       - uses: "actions/setup-node@v3"
       - name: Install dependencies
         run: npm install
-      - name: Run benchmarks
+      - name: Clean and seed data
+        run: npx prisma db seed
+      - name: Run Prisma ORM benchmarks
         uses: CodSpeedHQ/action@v2
         with:
-          run: npx prisma db seed && npx vitest bench --run
+          run: npx vitest bench --run ./src/prisma.bench.ts
+          token: ${{ secrets.CODSPEED_TOKEN }}
+      - name: Clean and seed data
+        run: npx prisma db seed
+      - name: Run Drizzle benchmarks
+        uses: CodSpeedHQ/action@v2
+        with:
+          run: npx vitest bench --run ./src/drizzle.bench.ts
           token: ${{ secrets.CODSPEED_TOKEN }}
