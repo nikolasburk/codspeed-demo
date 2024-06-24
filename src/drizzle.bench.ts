@@ -1,11 +1,14 @@
 import { drizzle } from "drizzle-orm/better-sqlite3";
 import Database from "better-sqlite3";
 import { Customer } from "./drizzle/schema";
+import * as schema from "./drizzle/schema";
+import * as relations from "./drizzle/relations";
 import { bench, describe } from "vitest";
+import { eq, desc, gt } from "drizzle-orm";
 
 const sqlite = new Database("./prisma/dev.db");
 
-export const db = drizzle(sqlite);
+export const db = drizzle(sqlite, { schema: { ...schema, ...relations } });
 
 describe("drizzle-orm", () => {
   /**
@@ -13,60 +16,60 @@ describe("drizzle-orm", () => {
    */
 
   bench("findMany-base", async () => {
-    const customersData = await db.select().from(Customer).execute();
+    // const customersData = await db.select().from(Customer).execute();
+    const customersData = await db.query.Customer.findMany();
     console.log(`customers:`, customersData.length);
   });
 
   bench("findMany-filters-ordering-pagination", async () => {
-    const customersWithOptions = await db
-      .select()
-      .from(Customer)
-      // .where(Customer.isActive.eq(true))
-      // .orderBy(Customer.createdAt.desc())
-      .limit(10)
-      .offset(0)
-      .execute();
+    const customersWithOptions = await db.query.Customer.findMany({
+      where: eq(Customer.isActive, "1"),
+      orderBy: [desc(Customer.createdAt)],
+      offset: 0,
+      limit: 10,
+    });
     console.log(`customersWithOptions:`, customersWithOptions.length);
   });
 
-  // bench("findMany-1-level-nesting", async () => {
-  //   const customersWithOrders = await db
-  //     .select(Customer, {
-  //       orders: db.select(Order).where(Order.customerId.eq(Customer.id)),
-  //     })
-  //     .execute();
-  //   console.log(`customersWithOrders:`, customersWithOrders.length);
-  // });
+  bench("findMany-1-level-nesting", async () => {
+    const customersWithOrders = await db.query.Customer.findMany({
+      with: {
+        Orders: true,
+      },
+    });
+    console.log(`customersWithOptions:`, customersWithOrders.length);
+  });
 
-  // bench("findMany-2-level-nesting", async () => {
-  //   const customersWithOrdersAndProducts = await db
-  //     .select(Customer, {
-  //       orders: db
-  //         .select(Orders, {
-  //           products: db.select(OrderProducts).join(Product).on(OrderProducts.productId.eq(Product.id)),
-  //         })
-  //         .where(Order.customerId.eq(Customer.id)),
-  //     })
-  //     .execute();
-  //   console.log(`customersWithOrdersAndProducts:`, customersWithOrdersAndProducts.length);
-  // });
+  bench("findMany-2-level-nesting", async () => {
+    const customersWithOrdersAndProducts = await db.query.Customer.findMany({
+      with: {
+        Orders: {
+          with: {
+            _OrderProducts: true,
+          },
+        },
+      },
+    });
+    console.log(`customersWithOrdersAndProducts:`, customersWithOrdersAndProducts.length);
+  });
 
-  // bench("findMany-relation-filters", async () => {
-  //   const customersWithLargeOrders = await db
-  //     .select(Customer, {
-  //       orders: db.select(Order).where(Order.customerId.eq(Customer.id).and(Order.totalAmount.gt(100))),
-  //     })
-  //     .execute();
-  //   console.log(`customersWithLargeOrders:`, customersWithLargeOrders.length);
-  // });
+  bench("findMany-relation-filters", async () => {
+    const customersWithLargeOrders = await db
+      .select()
+      .from(Customer)
+      .leftJoin(schema.Order, eq(Customer.id, schema.Order.customerId))
+      .where(gt(schema.Order.totalAmount, "100"))
+      .execute();
+    console.log(`customersWithLargeOrders:`, customersWithLargeOrders.length);
+  });
 
   /**
    * findFirst
    */
 
   bench("findFirst-base", async () => {
-    const firstCustomer = await db.select().from(Customer).limit(1).execute();
-    console.log(`firstCustomer:`, firstCustomer.length);
+    const firstCustomer = await db.query.Customer.findFirst();
+    console.log(`firstCustomer:`, firstCustomer);
   });
 
   // bench("findFirst-1-level-nesting", async () => {
